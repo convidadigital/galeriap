@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f6f1ea">
+  <meta name="description" content="Galeria Digital para seleção de fotos">
+  <title>Galeria Digital</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="brand">GALERIA DIGITAL</div>
+  <h1>Escolha suas fotos favoritas</h1>
+  <p>Clique nas imagens que deseja selecionar. Sua escolha fica salva neste aparelho até você finalizar.</p>
+</header>
+
+<main class="container">
+  <div class="toolbar">
+    <div>
+      <strong id="counter">0 fotos selecionadas</strong>
+      <span id="limitText"></span>
+    </div>
+    <button id="clearBtn" class="btn ghost" type="button">Limpar seleção</button>
+  </div>
+
+  <section id="gallery" class="gallery" aria-label="Galeria de fotos"></section>
+</main>
+
+<div class="bottom-bar">
+  <div class="bottom-info">
+    <span>Sua seleção</span>
+    <strong id="bottomCounter">0 fotos</strong>
+  </div>
+  <button id="reviewBtn" class="btn light" type="button">Ver selecionadas</button>
+  <button id="whatsappBtn" class="btn primary" type="button">Enviar no WhatsApp</button>
+</div>
+
+<dialog id="reviewDialog">
+  <div class="dialog-header">
+    <div>
+      <div class="dialog-brand">GALERIA DIGITAL</div>
+      <h2>Fotos selecionadas</h2>
+    </div>
+    <button id="closeDialog" class="icon-btn" type="button" aria-label="Fechar">×</button>
+  </div>
+  <div id="reviewList" class="review-list"></div>
+  <div class="dialog-footer">
+    <button id="sendFromDialog" class="btn primary" type="button">Enviar seleção no WhatsApp</button>
+  </div>
+</dialog>
+
+<div id="lightbox" class="lightbox" hidden>
+  <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Fechar">×</button>
+  <button id="prevPhoto" class="lightbox-nav prev" type="button" aria-label="Anterior">‹</button>
+  <img id="lightboxImg" alt="">
+  <button id="nextPhoto" class="lightbox-nav next" type="button" aria-label="Próxima">›</button>
+  <div id="lightboxLabel" class="lightbox-label"></div>
+</div>
+
+<script src="./script.js"></script>
+</body>
+</html>

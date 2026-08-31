@@ -1,0 +1,43 @@
+GALERIA DIGITAL — VERSÃO ATUALIZADA
+
+ESTRUTURA OBRIGATÓRIA NO GITHUB:
+
+index.html
+style.css
+script.js
+fotos/
+  foto-001.webp
+  foto-002.webp
+  foto-003.webp
+  foto-004.webp
+  foto-005.webp
+  foto-006.webp
+  foto-007.webp
+  foto-008.webp
+  foto-009.webp
+  foto-010.webp
+
+CONFIGURAÇÕES:
+WhatsApp: +55 84 99147-4530
+Título: GALERIA DIGITAL
+Limite de seleção: livre
+
+COMO SUBIR NO GITHUB:
+1. Crie um repositório novo.
+2. Deixe-o Public.
+3. NÃO envie o ZIP.
+4. Descompacte este arquivo no computador.
+5. Envie index.html, style.css, script.js e a pasta fotos.
+6. O index.html deve ficar na raiz do repositório.
+7. A pasta fotos também deve ficar na raiz.
+8. Vá em Settings > Pages.
+9. Source: Deploy from a branch.
+10. Branch: main.
+11. Folder: /(root).
+12. Save.
+13. Aguarde o deploy finalizar.
+
+IMPORTANTE:
+Não renomeie a pasta "fotos".
+Não renomeie as imagens.
+Não coloque index.html dentro de outra pasta.
