@@ -150,7 +150,7 @@ $("publishBtn")?.addEventListener("click", async () => {
     previewCover.style.backgroundPosition = "center";
     const meta = { name: coupleName, shoot: $("shootName").value.trim(), photos: hosted };
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(meta)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const longUrl = location.origin + location.pathname + "?g=" + encoded;
+    const longUrl = location.origin + "/api/preview?g=" + encoded;
     setStatus("Encurtando o link da galeria…");
     const shortResponse = await fetch("/api/shorten", {
       method: "POST",
