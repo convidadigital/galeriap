@@ -53,3 +53,12 @@
 .dialog-footer{display:flex;justify-content:flex-end;padding-top:16px}
 .lightbox{z-index:50}
 @media(max-width:650px){.hero{padding-top:38px}.fields{grid-template-columns:1fr}.section-head,.publish-row{align-items:stretch;flex-direction:column}.publish-row .btn{width:100%}.edit-card>img{height:240px}.bottom-bar{width:calc(100% - 18px);bottom:8px;gap:6px;padding:9px;border-radius:18px;flex-wrap:wrap}.bottom-info{min-width:80px;flex:1}.bottom-bar .btn{padding:10px 11px;font-size:11px}.bottom-bar .light{margin-right:0}.review-list{grid-template-columns:repeat(2,minmax(0,1fr))}.review-item img{height:120px}}
+
+.gallery-preview{display:flex;align-items:stretch;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#f6f1ea;margin:18px 0 22px;min-height:150px}
+.preview-cover{width:34%;min-width:110px;min-height:150px;background:linear-gradient(145deg,#d9c6b4,#f1e7dc 55%,#b9a18b);display:flex;align-items:center;justify-content:center;padding:14px;text-align:center}
+.preview-cover span{font-size:10px;letter-spacing:.2em;color:#fff;text-shadow:0 1px 5px #0005}
+.preview-copy{align-self:center;padding:22px;min-width:0}
+.preview-copy .eyebrow{font-size:9px;margin:0 0 9px;color:var(--muted)}
+.preview-copy h3{font-family:Georgia,"Times New Roman",serif;font-size:clamp(22px,3vw,32px);font-weight:400;line-height:1.15;margin:0 0 8px;overflow-wrap:anywhere}
+.preview-copy>p:last-child{font-size:13px;color:var(--muted);margin:0}
+@media(max-width:500px){.gallery-preview{min-height:125px}.preview-cover{min-height:125px;width:30%;min-width:88px}.preview-copy{padding:14px}}
