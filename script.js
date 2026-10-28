@@ -7,43 +7,43 @@ const CONFIG = {
 const PHOTOS = [
   {
     "id": "FOTO-001",
-    "src": "fotos/foto-001.webp"
+    "src": "foto-001.webp"
   },
   {
     "id": "FOTO-002",
-    "src": "fotos/foto-002.webp"
+    "src": "foto-002.webp"
   },
   {
     "id": "FOTO-003",
-    "src": "fotos/foto-003.webp"
+    "src": "foto-003.webp"
   },
   {
     "id": "FOTO-004",
-    "src": "fotos/foto-004.webp"
+    "src": "foto-004.webp"
   },
   {
     "id": "FOTO-005",
-    "src": "fotos/foto-005.webp"
+    "src": "foto-005.webp"
   },
   {
     "id": "FOTO-006",
-    "src": "fotos/foto-006.webp"
+    "src": "foto-006.webp"
   },
   {
     "id": "FOTO-007",
-    "src": "fotos/foto-007.webp"
+    "src": "foto-007.webp"
   },
   {
     "id": "FOTO-008",
-    "src": "fotos/foto-008.webp"
+    "src": "foto-008.webp"
   },
   {
     "id": "FOTO-009",
-    "src": "fotos/foto-009.webp"
+    "src": "foto-009.webp"
   },
   {
     "id": "FOTO-010",
-    "src": "fotos/foto-010.webp"
+    "src": "foto-010.webp"
   }
 ];
 
