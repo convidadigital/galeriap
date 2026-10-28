@@ -139,7 +139,16 @@ $("publishBtn")?.addEventListener("click", async () => {
       const result = await response.json();
       hosted.push({ id: photos[i].id, src: result.url });
     }
-    const meta = { name: $("clientName").value.trim() || "Galeria Digital", shoot: $("shootName").value.trim(), photos: hosted };
+    const coupleName = $("clientName").value.trim() || "Galeria Digital";
+    const shootName = $("shootName").value.trim() || "Ensaio fotográfico";
+    $("previewCoupleName").textContent = coupleName;
+    $("previewShootName").textContent = shootName;
+    const firstPhoto = hosted[0]?.src;
+    const previewCover = $("previewCover");
+    previewCover.style.backgroundImage = firstPhoto ? "linear-gradient(#0002,#0002), url(" + JSON.stringify(firstPhoto) + ")" : "";
+    previewCover.style.backgroundSize = "cover";
+    previewCover.style.backgroundPosition = "center";
+    const meta = { name: coupleName, shoot: $("shootName").value.trim(), photos: hosted };
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(meta)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const longUrl = location.origin + location.pathname + "?g=" + encoded;
     setStatus("Encurtando o link da galeria…");
