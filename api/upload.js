@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const match = data.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/);
     if (!match) return res.status(400).json({ error: "Formato de imagem inválido." });
     const bytes = Buffer.from(match[2], "base64");
-    if (bytes.length > 950 * 1024) {
+    if (bytes.length > 700 * 1024) {
       return res.status(413).json({ error: "A imagem continua grande demais. Tente uma imagem menor." });
     }
     const form = new FormData();
