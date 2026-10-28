@@ -4,61 +4,79 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f6f1ea">
-  <meta name="description" content="Galeria Digital para seleção de fotos">
-  <title>Galeria Digital</title>
+  <meta name="description" content="Studio Digital — edição e seleção de fotografias">
+  <title>Studio Digital | Galeria</title>
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./studio.css">
 </head>
 <body>
-
 <header class="hero">
-  <div class="brand">GALERIA DIGITAL</div>
-  <h1>Escolha suas fotos favoritas</h1>
-  <p>Clique nas imagens que deseja selecionar. Sua escolha fica salva neste aparelho até você finalizar.</p>
+  <div class="brand">STUDIO DIGITAL</div>
+  <h1 id="pageTitle">Prepare uma galeria.</h1>
+  <p id="pageIntro">Adicione as fotos, ajuste o enquadramento e envie um link temporário para o cliente escolher as favoritas.</p>
 </header>
 
 <main class="container">
-  <div class="toolbar">
-    <div>
-      <strong id="counter">0 fotos selecionadas</strong>
-      <span id="limitText"></span>
+  <section id="adminPanel" class="panel">
+    <h2>1. Dados da galeria</h2>
+    <div class="fields">
+      <label>Nome do cliente<input id="clientName" type="text" placeholder="Ex.: Yasmin & Léo" maxlength="100"></label>
+      <label>Nome do ensaio<input id="shootName" type="text" placeholder="Ex.: Pré-wedding" maxlength="100"></label>
     </div>
-    <button id="clearBtn" class="btn ghost" type="button">Limpar seleção</button>
-  </div>
+    <div class="section-head">
+      <h2>2. Adicione e edite as fotos</h2>
+      <label class="btn light upload-label" for="photoInput">Escolher fotos</label>
+      <input id="photoInput" type="file" accept="image/*" multiple hidden>
+    </div>
+    <p class="hint">Você pode girar, ajustar o corte e remover qualquer foto antes de publicar. As imagens só serão enviadas quando você clicar em “Criar link temporário”.</p>
+    <div id="editorGallery" class="gallery editor-gallery"></div>
+    <div class="publish-row">
+      <span id="editorCount">Nenhuma foto adicionada</span>
+      <button id="publishBtn" class="btn primary" type="button" disabled>Criar link temporário</button>
+    </div>
+    <p id="status" class="status" role="status"></p>
+    <section id="sharePanel" class="share-panel" hidden>
+      <h2>Galeria pronta para enviar</h2>
+      <p>Este link expira automaticamente após 24 horas. Copie e envie ao cliente.</p>
+      <input id="shareUrl" type="url" readonly aria-label="Link temporário da galeria">
+      <div class="share-actions">
+        <button id="copyLinkBtn" class="btn light" type="button">Copiar link</button>
+        <button id="sendLinkBtn" class="btn primary" type="button">Enviar pelo WhatsApp</button>
+      </div>
+    </section>
+  </section>
 
-  <section id="gallery" class="gallery" aria-label="Galeria de fotos"></section>
+  <section id="clientPanel" hidden>
+    <div class="client-heading">
+      <p class="eyebrow">GALERIA DIGITAL</p>
+      <h2 id="clientTitle">Escolha suas fotos favoritas</h2>
+      <p id="clientDescription">Toque nas fotos que deseja selecionar. Sua seleção fica salva neste aparelho até finalizar.</p>
+    </div>
+    <div class="toolbar">
+      <strong id="counter">0 fotos selecionadas</strong>
+      <button id="clearBtn" class="btn ghost" type="button">Limpar seleção</button>
+    </div>
+    <section id="gallery" class="gallery" aria-label="Galeria de fotos"></section>
+    <div class="bottom-bar">
+      <div class="bottom-info"><span>Sua seleção</span><strong id="bottomCounter">0 fotos</strong></div>
+      <button id="reviewBtn" class="btn light" type="button">Ver selecionadas</button>
+      <button id="whatsappBtn" class="btn primary" type="button">Enviar no WhatsApp</button>
+    </div>
+  </section>
 </main>
 
-<div class="bottom-bar">
-  <div class="bottom-info">
-    <span>Sua seleção</span>
-    <strong id="bottomCounter">0 fotos</strong>
-  </div>
-  <button id="reviewBtn" class="btn light" type="button">Ver selecionadas</button>
-  <button id="whatsappBtn" class="btn primary" type="button">Enviar no WhatsApp</button>
-</div>
-
 <dialog id="reviewDialog">
-  <div class="dialog-header">
-    <div>
-      <div class="dialog-brand">GALERIA DIGITAL</div>
-      <h2>Fotos selecionadas</h2>
-    </div>
-    <button id="closeDialog" class="icon-btn" type="button" aria-label="Fechar">×</button>
-  </div>
+  <div class="dialog-header"><div><div class="dialog-brand">STUDIO DIGITAL</div><h2>Fotos selecionadas</h2></div><button id="closeDialog" class="icon-btn" type="button" aria-label="Fechar">×</button></div>
   <div id="reviewList" class="review-list"></div>
-  <div class="dialog-footer">
-    <button id="sendFromDialog" class="btn primary" type="button">Enviar seleção no WhatsApp</button>
-  </div>
+  <div class="dialog-footer"><button id="sendFromDialog" class="btn primary" type="button">Enviar seleção no WhatsApp</button></div>
 </dialog>
 
 <div id="lightbox" class="lightbox" hidden>
   <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Fechar">×</button>
   <button id="prevPhoto" class="lightbox-nav prev" type="button" aria-label="Anterior">‹</button>
-  <img id="lightboxImg" alt="">
-  <button id="nextPhoto" class="lightbox-nav next" type="button" aria-label="Próxima">›</button>
+  <img id="lightboxImg" alt=""><button id="nextPhoto" class="lightbox-nav next" type="button" aria-label="Próxima">›</button>
   <div id="lightboxLabel" class="lightbox-label"></div>
 </div>
-
 <script src="./script.js"></script>
 </body>
 </html>
