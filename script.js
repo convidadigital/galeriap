@@ -141,9 +141,18 @@ $("publishBtn")?.addEventListener("click", async () => {
     }
     const meta = { name: $("clientName").value.trim() || "Galeria Digital", shoot: $("shootName").value.trim(), photos: hosted };
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(meta)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    const url = location.origin + location.pathname + "?g=" + encoded;
-    $("shareUrl").value = url; $("sharePanel").hidden = false;
-    setStatus("Link criado! As fotos hospedadas temporariamente expiram em até 24 horas.");
+    const longUrl = location.origin + location.pathname + "?g=" + encoded;
+    setStatus("Encurtando o link da galeria…");
+    const shortResponse = await fetch("/api/shorten", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: longUrl })
+    });
+    if (!shortResponse.ok) throw new Error("A galeria foi criada, mas não foi possível encurtar o link. Tente novamente.");
+    const shortResult = await shortResponse.json();
+    $("shareUrl").value = shortResult.url || longUrl;
+    $("sharePanel").hidden = false;
+    setStatus(shortResult.url ? "Galeria pronta! O link curto está pronto para compartilhar." : "Galeria pronta. Use o link abaixo.");
   } catch (err) {
     setStatus("Não foi possível criar a galeria: " + (err.message || "verifique sua conexão e tente novamente."), true);
   } finally { btn.disabled = false; }
