@@ -155,14 +155,19 @@ $("publishBtn")?.addEventListener("click", async () => {
     const started = await startResponse.json();
     if (!startResponse.ok) throw new Error(started.error || "Não foi possível iniciar a hospedagem.");
     const pending = started.uploads?.pending || [];
-    if (!started.claimToken || !started.version?.finalizeUrl || !started.site?.url || pending.length !== prepared.length) {
-      throw new Error("O serviço temporário retornou dados incompletos para a galeria.");
+    const skipped = started.uploads?.skipped || [];
+    if (!started.claimToken || !started.version?.finalizeUrl || !started.site?.url) {
+      throw new Error("O serviço temporário não retornou os dados necessários. Resposta: " + JSON.stringify(started).slice(0, 500));
     }
-    for (let i = 0; i < prepared.length; i++) {
-      const photo = prepared[i];
-      const pendingItem = pending.find(item => item.path === photo.path) || pending[i];
-      if (!pendingItem?.uploadUrl) throw new Error("Faltou o endereço de envio da foto " + photo.id + ".");
-      setStatus(`Enviando foto ${i + 1} de ${prepared.length}…`);
+    const knownPaths = new Set([...pending, ...skipped].map(item => item.path));
+    if (prepared.some(photo => !knownPaths.has(photo.path))) {
+      throw new Error("O serviço temporário não confirmou todas as fotos. Resposta: " + JSON.stringify(started.uploads || {}).slice(0, 500));
+    }
+    for (let i = 0; i < pending.length; i++) {
+      const pendingItem = pending[i];
+      const photo = prepared.find(item => item.path === pendingItem.path);
+      if (!photo || !pendingItem.uploadUrl) throw new Error("O serviço não forneceu o endereço de envio de " + (pendingItem.path || "uma foto") + ".");
+      setStatus(`Enviando foto ${i + 1} de ${pending.length}…`);
       const uploadResponse = await fetch("/api/upload", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "upload", uploadUrl: pendingItem.uploadUrl, data: photo.data, contentType: "image/jpeg" })
