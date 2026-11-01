@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       if (typeof uploadUrl !== "string" || !uploadUrl.startsWith("https://") || typeof data !== "string" || !data.startsWith("data:image/")) {
         return res.status(400).json({ error: "Dados de envio inválidos." });
       }
-      const match = data.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\\s\\S]+)$/);
+      const match = data.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/);
       if (!match) return res.status(400).json({ error: "Imagem inválida." });
       const bytes = Buffer.from(match[2], "base64");
       const upstream = await fetch(uploadUrl, {
