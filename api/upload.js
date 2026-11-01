@@ -1,39 +1,61 @@
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
   try {
-    const { data, filename = "photo.jpg", time = "24h" } = req.body || {};
-    if (typeof data !== "string" || !data.startsWith("data:image/")) {
-      return res.status(400).json({ error: "Imagem inválida." });
-    }
-    if (!["1h", "12h", "24h", "72h"].includes(time)) {
-      return res.status(400).json({ error: "Prazo de expiração inválido." });
-    }
-    const match = data.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/);
-    if (!match) return res.status(400).json({ error: "Formato de imagem inválido." });
-    const bytes = Buffer.from(match[2], "base64");
-    if (bytes.length > 700 * 1024) {
-      return res.status(413).json({ error: "A imagem continua grande demais. Tente uma imagem menor." });
-    }
-    const form = new FormData();
-    form.append("reqtype", "fileupload");
-    form.append("time", time);
-    form.append("fileToUpload", new Blob([bytes], { type: match[1] }), String(filename).replace(/[^a-zA-Z0-9._-]/g, "_"));
-    const upstream = await fetch("https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: form });
-    const result = (await upstream.text()).trim();
-    if (!upstream.ok || !/^https:\/\//i.test(result)) {
-      const detail = result.replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").slice(0, 220);
-      return res.status(502).json({
-        error: "O serviço temporário recusou a imagem.",
-        detail: detail || "Resposta vazia do serviço externo.",
-        upstreamStatus: upstream.status
+    const { action, files, uploadUrl, data, contentType, finalizeUrl, claimToken } = req.body || {};
+    if (action === "start") {
+      if (!Array.isArray(files) || !files.length || files.length > 100) {
+        return res.status(400).json({ error: "Lista de fotos inválida." });
+      }
+      const manifest = files.map(file => ({
+        path: String(file.path || "").replace(/[^a-zA-Z0-9._/-]/g, "_"),
+        size: Number(file.size),
+        contentType: "image/jpeg",
+        hash: String(file.hash || "")
+      }));
+      if (manifest.some(f => !f.path || !Number.isFinite(f.size) || f.size < 1 || f.size > 250 * 1024 * 1024 || !/^sha256:[a-f0-9]{64}$/.test(f.hash))) {
+        return res.status(400).json({ error: "Dados de uma ou mais fotos são inválidos." });
+      }
+      const upstream = await fetch("https://beacon.host/v1/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: manifest })
       });
+      const result = await upstream.json();
+      if (!upstream.ok) return res.status(502).json({ error: "Não foi possível iniciar a hospedagem temporária.", detail: result });
+      return res.status(200).json(result);
     }
-    return res.status(200).json({ url: result, expiresIn: time });
+    if (action === "upload") {
+      if (typeof uploadUrl !== "string" || !uploadUrl.startsWith("https://") || typeof data !== "string" || !data.startsWith("data:image/")) {
+        return res.status(400).json({ error: "Dados de envio inválidos." });
+      }
+      const match = data.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\\s\\S]+)$/);
+      if (!match) return res.status(400).json({ error: "Imagem inválida." });
+      const bytes = Buffer.from(match[2], "base64");
+      const upstream = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": contentType || match[1] },
+        body: bytes
+      });
+      if (!upstream.ok) return res.status(502).json({ error: "Falha ao transferir uma foto para o armazenamento temporário.", status: upstream.status });
+      return res.status(200).json({ uploaded: true });
+    }
+    if (action === "finalize") {
+      if (typeof finalizeUrl !== "string" || !finalizeUrl.startsWith("/v1/") || typeof claimToken !== "string") {
+        return res.status(400).json({ error: "Dados de finalização inválidos." });
+      }
+      const upstream = await fetch("https://beacon.host" + finalizeUrl, {
+        method: "POST",
+        headers: { "X-Claim-Token": claimToken }
+      });
+      const result = await upstream.json().catch(() => ({}));
+      if (!upstream.ok) return res.status(502).json({ error: "Não foi possível finalizar a galeria temporária.", detail: result });
+      return res.status(200).json(result);
+    }
+    return res.status(400).json({ error: "Ação inválida." });
   } catch (error) {
-    return res.status(500).json({ error: "Falha no envio temporário da imagem." });
+    return res.status(500).json({ error: "Falha na hospedagem temporária.", detail: error.message });
   }
 }
