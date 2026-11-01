@@ -115,53 +115,88 @@ $("reviewBtn")?.addEventListener("click", () => {
 $("closeDialog")?.addEventListener("click", () => $("reviewDialog").close());
 $("sendFromDialog")?.addEventListener("click", sendWhatsApp);
 
+async function dataUrlBytes(dataUrl) {
+  const base64 = dataUrl.split(",")[1] || "";
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+async function sha256DataUrl(dataUrl) {
+  const bytes = await dataUrlBytes(dataUrl);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return "sha256:" + [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
 $("publishBtn")?.addEventListener("click", async () => {
   const btn = $("publishBtn"); btn.disabled = true;
   $("sharePanel").hidden = true;
   try {
-    const hosted = [];
+    const prepared = [];
     for (let i = 0; i < photos.length; i++) {
-      setStatus(`Preparando foto ${i + 1} de ${photos.length}…`);
+      setStatus(`Otimizando foto ${i + 1} de ${photos.length}…`);
       let data = await optimizeImage(photos[i].preview, photos[i].rotation || 0);
-      // Litterbox temporary uploads have a 1 MB per-file limit.
-      let response;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        response = await fetch("/api/upload", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ data, filename: photos[i].id + ".jpg", time: "24h" }) });
-        if (response.ok) break;
-        if (attempt === 0) {
-          const img = await loadImage(data), canvas = document.createElement("canvas");
-          const factor = 0.72; canvas.width = Math.round(img.naturalWidth * factor); canvas.height = Math.round(img.naturalHeight * factor);
-          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-          data = canvas.toDataURL("image/jpeg", 0.55);
-        }
+      let bytes = await dataUrlBytes(data);
+      if (bytes.byteLength > 4 * 1024 * 1024) {
+        const img = await loadImage(data), canvas = document.createElement("canvas");
+        const factor = 0.65;
+        canvas.width = Math.round(img.naturalWidth * factor);
+        canvas.height = Math.round(img.naturalHeight * factor);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        data = canvas.toDataURL("image/jpeg", 0.5);
+        bytes = await dataUrlBytes(data);
       }
-      if (!response?.ok) throw new Error(await response.text().catch(() => "Não foi possível hospedar temporariamente uma foto."));
-      const result = await response.json();
-      hosted.push({ id: photos[i].id, src: result.url });
+      prepared.push({ id: photos[i].id, path: photos[i].id + ".jpg", data, size: bytes.byteLength, hash: await sha256DataUrl(data) });
     }
+    setStatus("Preparando hospedagem temporária das fotos…");
+    const startResponse = await fetch("/api/upload", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "start", files: prepared.map(p => ({ path: p.path, size: p.size, hash: p.hash })) })
+    });
+    const started = await startResponse.json();
+    if (!startResponse.ok) throw new Error(started.error || "Não foi possível iniciar a hospedagem.");
+    const pending = started.uploads?.pending || [];
+    if (!started.claimToken || !started.version?.finalizeUrl || !started.site?.url || pending.length !== prepared.length) {
+      throw new Error("O serviço temporário retornou dados incompletos para a galeria.");
+    }
+    for (let i = 0; i < prepared.length; i++) {
+      const photo = prepared[i];
+      const pendingItem = pending.find(item => item.path === photo.path) || pending[i];
+      if (!pendingItem?.uploadUrl) throw new Error("Faltou o endereço de envio da foto " + photo.id + ".");
+      setStatus(`Enviando foto ${i + 1} de ${prepared.length}…`);
+      const uploadResponse = await fetch("/api/upload", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "upload", uploadUrl: pendingItem.uploadUrl, data: photo.data, contentType: "image/jpeg" })
+      });
+      const uploadResult = await uploadResponse.json();
+      if (!uploadResponse.ok) throw new Error(uploadResult.error || "Falha ao enviar " + photo.id + ".");
+    }
+    setStatus("Finalizando a galeria…");
+    const finalResponse = await fetch("/api/upload", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "finalize", finalizeUrl: started.version.finalizeUrl, claimToken: started.claimToken })
+    });
+    const finalized = await finalResponse.json();
+    if (!finalResponse.ok) throw new Error(finalized.error || "Não foi possível finalizar a galeria.");
+    const hosted = prepared.map(p => ({ id: p.id, src: started.site.url.replace(/\/$/, "") + "/" + p.path.split("/").map(encodeURIComponent).join("/") }));
     const coupleName = $("clientName").value.trim() || "Galeria Digital";
     const shootName = $("shootName").value.trim() || "Ensaio fotográfico";
     $("previewCoupleName").textContent = coupleName;
     $("previewShootName").textContent = shootName;
-    const firstPhoto = hosted[0]?.src;
-    const previewCover = $("previewCover");
-    previewCover.style.backgroundImage = firstPhoto ? "linear-gradient(#0002,#0002), url(" + JSON.stringify(firstPhoto) + ")" : "";
-    previewCover.style.backgroundSize = "cover";
-    previewCover.style.backgroundPosition = "center";
+    $("previewCover").style.backgroundImage = "linear-gradient(#0002,#0002), url(" + JSON.stringify(hosted[0].src) + ")";
+    $("previewCover").style.backgroundSize = "cover";
+    $("previewCover").style.backgroundPosition = "center";
     const meta = { name: coupleName, shoot: $("shootName").value.trim(), photos: hosted };
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(meta)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     const longUrl = location.origin + "/api/preview?g=" + encoded;
     setStatus("Encurtando o link da galeria…");
     const shortResponse = await fetch("/api/shorten", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: longUrl })
     });
-    if (!shortResponse.ok) throw new Error("A galeria foi criada, mas não foi possível encurtar o link. Tente novamente.");
-    const shortResult = await shortResponse.json();
-    $("shareUrl").value = shortResult.url || longUrl;
+    const shortResult = await shortResponse.json().catch(() => ({}));
+    $("shareUrl").value = shortResponse.ok ? (shortResult.url || longUrl) : longUrl;
     $("sharePanel").hidden = false;
-    setStatus(shortResult.url ? "Galeria pronta! O link curto está pronto para compartilhar." : "Galeria pronta. Use o link abaixo.");
+    setStatus("Galeria publicada! As fotos ficarão disponíveis por 24 horas.");
   } catch (err) {
     setStatus("Não foi possível criar a galeria: " + (err.message || "verifique sua conexão e tente novamente."), true);
   } finally { btn.disabled = false; }
