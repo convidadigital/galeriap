@@ -182,7 +182,7 @@ function decodeGallery(value) {
 }
 function initClientGallery(meta) {
   clientGallery = true;
-  $("adminPanel").hidden = true; $("clientPanel").hidden = false;
+  $("welcomePanel").hidden = true; $("adminPanel") && ($("adminPanel").hidden = true); $("clientPanel").hidden = false;
   $("pageTitle").textContent = meta.name || "Escolha suas fotos favoritas";
   $("pageIntro").textContent = meta.shoot || "Selecione as fotos que deseja receber.";
   $("clientTitle").textContent = meta.name || "Escolha suas fotos favoritas";
@@ -193,5 +193,5 @@ function initClientGallery(meta) {
 }
 if (galleryParam) {
   try { initClientGallery(decodeGallery(galleryParam)); }
-  catch { $("pageTitle").textContent = "Link de galeria inválido"; $("pageIntro").textContent = "Peça ao Studio Digital um novo link de seleção."; $("adminPanel").hidden = true; }
+  catch { $("pageTitle").textContent = "Link de galeria inválido"; $("pageIntro").textContent = "Peça ao Studio Digital um novo link de seleção."; $("welcomePanel").hidden = true; $("adminPanel") && ($("adminPanel").hidden = true); }
 }
