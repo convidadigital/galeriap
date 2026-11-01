@@ -25,7 +25,12 @@ export default async function handler(req, res) {
     const upstream = await fetch("https://litterbox.catbox.moe/resources/internals/api.php", { method: "POST", body: form });
     const result = (await upstream.text()).trim();
     if (!upstream.ok || !/^https:\/\//i.test(result)) {
-      return res.status(502).json({ error: "O serviço temporário não aceitou a imagem. Tente novamente." });
+      const detail = result.replace(/<[^>]*>/g, " ").replace(/\\s+/g, " ").slice(0, 220);
+      return res.status(502).json({
+        error: "O serviço temporário recusou a imagem.",
+        detail: detail || "Resposta vazia do serviço externo.",
+        upstreamStatus: upstream.status
+      });
     }
     return res.status(200).json({ url: result, expiresIn: time });
   } catch (error) {
