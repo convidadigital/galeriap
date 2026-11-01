@@ -62,3 +62,8 @@
 .preview-copy h3{font-family:Georgia,"Times New Roman",serif;font-size:clamp(22px,3vw,32px);font-weight:400;line-height:1.15;margin:0 0 8px;overflow-wrap:anywhere}
 .preview-copy>p:last-child{font-size:13px;color:var(--muted);margin:0}
 @media(max-width:500px){.gallery-preview{min-height:125px}.preview-cover{min-height:125px;width:30%;min-width:88px}.preview-copy{padding:14px}}
+
+.welcome-panel{max-width:720px;margin:8vh auto;padding:clamp(28px,6vw,64px) 24px;text-align:center;background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:18px}
+.welcome-mark{font-size:11px;letter-spacing:.28em;font-weight:700;color:var(--muted);margin-bottom:24px}
+.welcome-panel h2{font-family:Georgia,"Times New Roman",serif;font-size:clamp(28px,5vw,42px);font-weight:400;margin:0 0 14px}
+.welcome-panel p{max-width:460px;margin:0 auto;color:var(--muted);line-height:1.7}
